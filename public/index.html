@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starterhomes.ai - Find Your Dream Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .nav-link.active {
+            color: #4f46e5; /* indigo-600 */
+            font-weight: 600;
+        }
+        .header-backdrop {
+            -webkit-backdrop-filter: saturate(180%) blur(5px);
+            backdrop-filter: saturate(180%) blur(5px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .hero-gradient {
+            background: linear-gradient(180deg, #f8fafc 0%, #f0f4ff 100%);
+        }
+        .form-input {
+             transition: all 0.2s ease-in-out;
+        }
+        .form-input:focus {
+             box-shadow: 0 0 0 2px #4f46e5;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="header-backdrop sticky top-0 z-40 border-b border-slate-200">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-slate-900">
+                <a href="#home">Starterhomes<span class="text-indigo-600">.ai</span></a>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#home" class="nav-link text-slate-600 hover:text-indigo-600 transition duration-300">Home</a>
+                <a href="#buy" class="nav-link text-slate-600 hover:text-indigo-600 transition duration-300">Buy</a>
+                <a href="#sell" class="nav-link text-slate-600 hover:text-indigo-600 transition duration-300">Sell</a>
+                <a href="#rent" class="nav-link text-slate-600 hover:text-indigo-600 transition duration-300">Rent</a>
+                <a href="#about" class="nav-link text-slate-600 hover:text-indigo-600 transition duration-300">About</a>
+                <a href="#contact" class="nav-link text-slate-600 hover:text-indigo-600 transition duration-300">Contact Us</a>
+            </div>
+            <div>
+                <button class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300 shadow-sm hover:shadow-md">
+                    Sign In
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Home Page Section -->
+        <section id="home" class="page-content">
+            <!-- AI Chat Section -->
+            <div class="hero-gradient">
+                <div class="container mx-auto px-6 py-16 text-center">
+                    <h1 class="text-4xl md:text-5xl font-extrabold mb-3 text-slate-900">
+                        Helping you find your <span class="text-indigo-600">dream home</span>
+                    </h1>
+                    <p class="text-lg text-slate-600 mb-8 max-w-3xl mx-auto">Describe what you're looking for. Want a big yard for your dog? A kitchen with a marble island? Let our AI do the searching.</p>
+                    <div class="max-w-3xl mx-auto bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-200">
+                        <div id="ai-response" class="text-left text-slate-700 mb-4 min-h-[24px] px-2">
+                            <p class="font-medium">I'm ready to help! What makes a house a home for you?</p>
+                        </div>
+                        <div class="relative w-full">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                 <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <input type="text" id="user-query" placeholder="e.g., 'A cozy house with a big backyard...'" class="w-full p-4 pl-12 pr-36 sm:pr-40 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 text-lg">
+                            <button id="search-btn" class="absolute inset-y-1.5 right-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 flex items-center justify-center w-32 font-semibold">
+                                <span id="search-btn-text">Search</span>
+                                <div id="loading-indicator" class="hidden loader"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Listings Section -->
+            <div id="results-section" class="container mx-auto px-6 py-12">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-slate-900">Featured Homes</h2>
+                    <span id="results-count" class="font-medium text-slate-500"></span>
+                </div>
+                <div id="homes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+            </div>
+        </section>
+
+        <!-- Other Pages Content (wrapped for consistent padding) -->
+        <div class="container mx-auto px-6 py-12">
+            <section id="buy" class="page-content hidden text-center">
+                <h1 class="text-4xl font-bold mb-4 text-slate-900">Homes for Sale</h1>
+                <p class="text-lg text-slate-600">Our 'Buy' page is under construction. Soon you'll find advanced filters and market insights here!</p>
+            </section>
+
+            <section id="sell" class="page-content hidden">
+                <div class="max-w-2xl mx-auto">
+                    <h1 class="text-4xl font-bold text-center mb-4 text-slate-900">Sell Your Home</h1>
+                    <p class="text-lg text-slate-600 text-center mb-8">Get a free, AI-powered valuation for your home. Fill out the details below to get started.</p>
+                    <form class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6">
+                        <div>
+                            <label for="sell-address" class="block text-sm font-medium text-slate-700">Property Address</label>
+                            <input type="text" id="sell-address" class="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 form-input">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div><label for="sell-beds" class="block text-sm font-medium text-slate-700">Bedrooms</label><input type="number" id="sell-beds" class="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm form-input"></div>
+                            <div><label for="sell-baths" class="block text-sm font-medium text-slate-700">Bathrooms</label><input type="number" id="sell-baths" class="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm form-input"></div>
+                            <div><label for="sell-sqft" class="block text-sm font-medium text-slate-700">Sq. Ft.</label><input type="number" id="sell-sqft" class="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm form-input"></div>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300">Get My Estimate</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="rent" class="page-content hidden text-center">
+                 <h1 class="text-4xl font-bold mb-4 text-slate-900">Rental Properties</h1>
+                 <p class="text-lg text-slate-600">Looking for a rental? Our rental portal is coming soon, with AI-powered matching to find your perfect temporary home.</p>
+            </section>
+
+            <section id="about" class="page-content hidden">
+                <div class="max-w-3xl mx-auto text-center">
+                     <h1 class="text-4xl font-bold mb-4 text-slate-900">About Starterhomes.ai</h1>
+                     <p class="text-xl text-slate-600 mb-8">We're revolutionizing the home buying experience.</p>
+                     <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop" class="rounded-2xl shadow-xl w-full h-80 object-cover mb-8">
+                     <div class="text-left text-slate-700 space-y-4">
+                        <p>At Starterhomes.ai, we believe that finding your dream home should be an exciting and seamless journey. Traditional real estate searches are outdated, relying on simple filters that can't capture the nuances of what truly makes a house a home.</p>
+                        <p>Our mission is to change that. By leveraging cutting-edge artificial intelligence, we allow you to search for homes in a more human way. Simply describe what you're looking for—whether it's "a kitchen perfect for entertaining," "a backyard with plenty of room for a dog," or "a living room with abundant natural light"—and our AI will analyze thousands of listings, including photos and descriptions, to find properties that match your unique vision. We're not just a search engine; we're your personal AI real estate assistant.</p>
+                     </div>
+                </div>
+            </section>
+
+            <section id="contact" class="page-content hidden">
+                <div class="max-w-2xl mx-auto">
+                     <h1 class="text-4xl font-bold text-center mb-4 text-slate-900">Get In Touch</h1>
+                     <p class="text-lg text-slate-600 text-center mb-8">Have questions? We'd love to hear from you. Fill out the form below or email us.</p>
+                     <form class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label for="contact-name" class="block text-sm font-medium text-slate-700">Full Name</label><input type="text" id="contact-name" class="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm form-input"></div>
+                             <div><label for="contact-email" class="block text-sm font-medium text-slate-700">Email Address</label><input type="email" id="contact-email" class="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm form-input"></div>
+                        </div>
+                        <div>
+                            <label for="contact-message" class="block text-sm font-medium text-slate-700">Message</label>
+                            <textarea id="contact-message" rows="4" class="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm form-input"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300">Send Message</button>
+                     </form>
+                </div>
+            </section>
+            
+            <!-- Details Page Section -->
+            <section id="details" class="page-content hidden"></section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300">
+        <div class="container mx-auto px-6 py-8">
+            <div class="text-center">
+                <a href="#home" class="text-2xl font-bold text-white">Starterhomes<span class="text-indigo-400">.ai</span></a>
+                <p class="mt-2 text-sm text-slate-400">© 2025 Starterhomes.ai. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- DOM Element Selection ---
+        const userQueryInput = document.getElementById('user-query');
+        const searchBtn = document.getElementById('search-btn');
+        const searchBtnText = document.getElementById('search-btn-text');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const aiResponse = document.getElementById('ai-response');
+        const homesGrid = document.getElementById('homes-grid');
+        const resultsCount = document.getElementById('results-count');
+        const pageContents = document.querySelectorAll('.page-content');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // --- Mock Data ---
+        const allHomes = [1111111111111111111111111111111111111111111111111111111111
+            { price: "420,000", address: "123 Sunnyvale Dr, Austin, TX", beds: 3, baths: 2, sqft: 1850, imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=2574&auto=format&fit=crop", tags: ['natural light', 'modern'] },
+            { price: "550,000", address: "456 Oakwood Ln, Austin, TX", beds: 4, baths: 3, sqft: 2400, imageUrl: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=2670&auto=format&fit=crop", tags: ['lawn space', 'backyard'] },
+            { price: "385,000", address: "789 Crestview Rd, Austin, TX", beds: 3, baths: 2, sqft: 1600, imageUrl: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=2670&auto=format&fit=crop", tags: ['cozy', 'starter'] },
+            { price: "610,000", address: "101 River Bend Ct, Austin, TX", beds: 4, baths: 3, sqft: 2750, imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670&auto=format&fit=crop", tags: ['open concept', 'modern'] },
+            { price: "475,000", address: "212 Maple Ave, Austin, TX", beds: 3, baths: 2.5, sqft: 2100, imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2670&auto=format&fit=crop", tags: ['windows', 'natural light'] },
+            { price: "515,000", address: "333 Pine St, Austin, TX", beds: 4, baths: 2, sqft: 2250, imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2670&auto=format&fit=crop", tags: ['family', 'backyard'] },
+            { price: "720,000", address: "555 Skyline Blvd, Austin, TX", beds: 5, baths: 4, sqft: 3200, imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=2670&auto=format&fit=crop", tags: ['luxury', 'pool', 'modern'] },
+            { price: "399,000", address: "88 Rose Petal Ln, Austin, TX", beds: 2, baths: 2, sqft: 1450, imageUrl: "https://images.unsplash.com/photo-1605276374104-5de67d216b8a?q=80&w=2670&auto=format&fit=crop", tags: ['charming', 'garden', 'cozy'] },
+            { price: "450,000", address: "901 Tech Ridge, Austin, TX", beds: 3, baths: 2, sqft: 1900, imageUrl: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=2670&auto=format&fit=crop", tags: ['suburban', 'family', 'garage'] },
+            { price: "810,000", address: "42 Lakeview Dr, Austin, TX", beds: 4, baths: 3.5, sqft: 2900, imageUrl: "https://images.unsplash.com/photo-1600585153337-2d885a1a1f33?q=80&w=2670&auto=format&fit=crop", tags: ['lake view', 'windows', 'luxury'] },
+            { price: "410,000", address: "1122 Heritage Pkwy, Austin, TX", beds: 3, baths: 2, sqft: 1750, imageUrl: "https://images.unsplash.com/photo-1576941089067-2de3c901e126?q=80&w=2835&auto=format&fit=crop", tags: ['classic', 'brick', 'starter'] },
+            { price: "595,000", address: "780 Innovation Way, Austin, TX", beds: 3, baths: 3, sqft: 2300, imageUrl: "https://images.unsplash.com/photo-1558036117-15d82a90b9b1?q=80&w=2565&auto=format&fit=crop", tags: ['modern', 'minimalist', 'open concept'] }
+        ];
+
+        // --- Global Variables ---
+        let forecastChartInstance = null;
+
+        // --- Router Logic ---
+        const handleRouteChange = () => {
+            const hash = window.location.hash.substring(1);
+
+            // Hide all pages
+            pageContents.forEach(page => page.classList.add('hidden'));
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            if (hash.startsWith('details/')) {
+                const address = decodeURIComponent(hash.substring(8));
+                const home = allHomes.find(h => h.address === address);
+                if (home) {
+                    displayDetailsPage(home);
+                    document.getElementById('details').classList.remove('hidden');
+                } else {
+                    window.location.hash = '#home'; // Fallback to home if no match
+                }
+            } else {
+                const pageId = hash || 'home';
+                const activePage = document.getElementById(pageId);
+                if (activePage) {
+                    activePage.classList.remove('hidden');
+                    const activeLink = document.querySelector(`.nav-link[href="#${pageId}"]`);
+                    if (activeLink) activeLink.classList.add('active');
+                } else { // Fallback for invalid hash
+                    document.getElementById('home').classList.remove('hidden');
+                    document.querySelector('.nav-link[href="#home"]').classList.add('active');
+                }
+            }
+            window.scrollTo(0, 0);
+        };
+        
+        // --- Event Listeners ---
+        window.addEventListener('hashchange', handleRouteChange);
+        window.addEventListener('DOMContentLoaded', () => {
+             handleRouteChange();
+             displayHomes(allHomes);
+        });
+        
+        searchBtn.addEventListener('click', handleSearch);
+        userQueryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleSearch();
+        });
+
+        homesGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.home-card');
+            if (card && card.dataset.address) {
+                window.location.hash = 'details/' + encodeURIComponent(card.dataset.address);
+            }
+        });
+
+        // --- Main Functions (Home Page) ---
+        async function handleSearch() {
+            const query = userQueryInput.value.trim();
+            if (!query) return;
+            toggleLoading(true);
+            aiResponse.innerHTML = `<p class="italic text-indigo-600">Analyzing listings for homes that match your description...</p>`;
+            await new Promise(resolve => setTimeout(resolve, 1500)); 
+            const keywords = query.toLowerCase().split(' ');
+            const results = allHomes.filter(home => {
+                const homeTagsString = home.tags.join(' ');
+                return keywords.some(keyword => homeTagsString.includes(keyword));
+            });
+            const finalResults = results.length > 0 ? results : []; 
+            if(finalResults.length > 0) {
+                 aiResponse.innerHTML = `<p>Great news! I found ${finalResults.length} homes that you might love. Take a look below!</p>`;
+                 displayHomes(finalResults);
+            } else {
+                 aiResponse.innerHTML = `<p>I couldn't find an exact match, but here are some popular homes you might like.</p>`;
+                 displayHomes(allHomes);
+            }
+            toggleLoading(false);
+        }
+
+        function displayHomes(homes) {
+            homesGrid.innerHTML = ''; 
+            if (homes.length === 0) {
+                 homesGrid.innerHTML = `<p class="text-slate-500 md:col-span-2 lg:col-span-3 xl:col-span-4 text-center">No homes found.</p>`;
+            } else {
+                 homes.forEach(home => {
+                    const card = document.createElement('div');
+                    card.className = 'home-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer';
+                    card.dataset.address = home.address;
+                    card.innerHTML = `
+                        <div><img class="h-56 w-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f8fafc/64748b?text=Image+Not+Available';" src="${home.imageUrl}" alt="Image of ${home.address}"></div>
+                        <div class="p-6">
+                            <p class="text-2xl font-bold text-indigo-600 mb-2">$${home.price}</p>
+                            <h3 class="font-semibold text-lg text-slate-900">${home.address}</h3>
+                            <div class="mt-4 flex space-x-4 text-slate-600">
+                                <span><strong>${home.beds}</strong> bds</span> &bull; <span><strong>${home.baths}</strong> ba</span> &bull; <span><strong>${home.sqft}</strong> sqft</span>
+                            </div>
+                        </div>`;
+                    homesGrid.appendChild(card);
+                });
+            }
+            resultsCount.textContent = `${homes.length} results`;
+        }
+        
+        // --- Details Page Function ---
+        function displayDetailsPage(home) {
+            const detailsSection = document.getElementById('details');
+            detailsSection.innerHTML = `
+                <div class="max-w-6xl mx-auto">
+                    <div class="mb-8">
+                        <a href="#home" class="inline-flex items-center text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            Back to Search Results
+                        </a>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-0">
+                            <div class="md:col-span-3">
+                                <img src="${home.imageUrl}" alt="Full view of ${home.address}" class="w-full h-80 md:h-full object-cover">
+                            </div>
+                            <div class="md:col-span-2 p-8 flex flex-col">
+                                <h2 class="text-3xl font-bold text-slate-900 mb-2">${home.address}</h2>
+                                <p class="text-2xl font-semibold text-indigo-600 mb-6">$${home.price}</p>
+                                <div class="flex items-center space-x-6 text-slate-600 border-b pb-6 mb-6">
+                                    <span><strong>${home.beds}</strong> beds</span>
+                                    <span><strong>${home.baths}</strong> baths</span>
+                                    <span><strong>${home.sqft}</strong> sqft</span>
+                                </div>
+                                <div class="mt-6">
+                                    <h3 class="text-xl font-bold text-slate-800 mb-4">Future Value Forecast</h3>
+                                    <p class="text-sm text-slate-500 mb-4">Based on historical market data, we project the value of this home could increase over the next 10 years.</p>
+                                    <div class="relative h-64"><canvas id="details-forecast-chart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            generateForecast(home.price, home.address, 'details-forecast-chart');
+        }
+
+        // --- Forecast Chart Function ---
+        function generateForecast(priceStr, address, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (forecastChartInstance) {
+                forecastChartInstance.destroy();
+            }
+
+            let initialValue = parseInt(priceStr.replace(/,/g, ''));
+            const hash = address.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0);
+            const appreciationRate = 0.045 + (hash % 15) / 1000;
+            const labels = [];
+            const data = [];
+            const currentYear = 2025;
+
+            for (let i = 0; i <= 10; i++) {
+                const year = currentYear + i;
+                labels.push(year.toString());
+                const futureValue = initialValue * Math.pow(1 + appreciationRate, i);
+                data.push(Math.round(futureValue));
+            }
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(79, 70, 229, 0.4)');
+            gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+
+            forecastChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Projected Value',
+                        data: data,
+                        backgroundColor: gradient,
+                        borderColor: '#4F46E5',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4F46E5',
+                        pointRadius: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000) + 'k';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- UI Helper Functions ---
+        function toggleLoading(isLoading) {
+            userQueryInput.disabled = isLoading;
+            searchBtn.disabled = isLoading;
+            if (isLoading) {
+                searchBtnText.classList.add('hidden');
+                loadingIndicator.classList.remove('hidden');
+            } else {
+                searchBtnText.classList.remove('hidden');
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
