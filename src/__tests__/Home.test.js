@@ -1,8 +1,9 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import Home from '../pages/Home';
 
-test('renders starter homes app', () => {
-  render(<App />);
+test('renders Home page', () => {
+  render(<Home />);
   const headingElement = screen.getByText(/Starterhomes\.ai/i);
   expect(headingElement).toBeInTheDocument();
 });
