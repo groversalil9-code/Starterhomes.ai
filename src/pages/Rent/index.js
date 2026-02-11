@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Mock rental listings data with expanded fields
@@ -591,9 +591,181 @@ const NeighborhoodTab = ({ rental }) => (
   </div>
 );
 
+// Modal Component
+const Modal = ({ isOpen, onClose, title, children }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = 'hidden';
+    const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" data-testid="modal-backdrop" onClick={onClose}>
+      <div className="absolute inset-0 bg-black bg-opacity-50" />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none" data-testid="modal-close">&times;</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// Schedule Tour Form Component
+const ScheduleTourForm = ({ onClose }) => {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', date: '', time: '', message: '' });
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = setTimeout(() => onClose(), 2000);
+    return () => clearTimeout(timer);
+  }, [submitted, onClose]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = 'Name is required';
+    if (!form.email.trim()) newErrors.email = 'Email is required';
+    if (!form.phone.trim()) newErrors.phone = 'Phone is required';
+    if (!form.date.trim()) newErrors.date = 'Preferred date is required';
+    if (!form.time) newErrors.time = 'Preferred time is required';
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="text-center py-8" data-testid="tour-success">
+        <div className="text-green-500 text-5xl mb-3">&#10003;</div>
+        <h3 className="text-xl font-bold text-gray-800">Tour Scheduled!</h3>
+        <p className="text-gray-500 mt-2">We'll confirm your tour shortly.</p>
+      </div>
+    );
+  }
+
+  const inputClass = (field) =>
+    `w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 ${errors[field] ? 'border-red-400' : 'border-gray-300'}`;
+
+  return (
+    <form onSubmit={handleSubmit} data-testid="tour-form" className="space-y-4">
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Name *</label>
+        <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass('name')} />
+        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Email *</label>
+        <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass('email')} />
+        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Phone *</label>
+        <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass('phone')} />
+        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Preferred Date *</label>
+        <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className={inputClass('date')} />
+        {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Preferred Time *</label>
+        <select value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className={inputClass('time')}>
+          <option value="">Select a time</option>
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+        </select>
+        {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Message</label>
+        <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" rows="3" />
+      </div>
+      <button type="submit" className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition-colors">Schedule Tour</button>
+    </form>
+  );
+};
+
+// Contact Landlord Form Component
+const ContactLandlordForm = ({ onClose }) => {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = setTimeout(() => onClose(), 2000);
+    return () => clearTimeout(timer);
+  }, [submitted, onClose]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = 'Name is required';
+    if (!form.email.trim()) newErrors.email = 'Email is required';
+    if (!form.phone.trim()) newErrors.phone = 'Phone is required';
+    if (!form.message.trim()) newErrors.message = 'Message is required';
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="text-center py-8" data-testid="contact-success">
+        <div className="text-green-500 text-5xl mb-3">&#10003;</div>
+        <h3 className="text-xl font-bold text-gray-800">Message Sent!</h3>
+        <p className="text-gray-500 mt-2">The landlord will get back to you soon.</p>
+      </div>
+    );
+  }
+
+  const inputClass = (field) =>
+    `w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 ${errors[field] ? 'border-red-400' : 'border-gray-300'}`;
+
+  return (
+    <form onSubmit={handleSubmit} data-testid="contact-form" className="space-y-4">
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Name *</label>
+        <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass('name')} />
+        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Email *</label>
+        <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass('email')} />
+        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Phone *</label>
+        <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass('phone')} />
+        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600 block mb-1">Message *</label>
+        <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={inputClass('message')} rows="4" />
+        {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
+      </div>
+      <button type="submit" className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition-colors">Send Message</button>
+    </form>
+  );
+};
+
 // Rental Detail Screen with Tabs and Sidebar
 const RentalDetailScreen = ({ rental, onBackClick }) => {
   const [activeTab, setActiveTab] = useState(0);
+  const [showTourModal, setShowTourModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -659,10 +831,10 @@ const RentalDetailScreen = ({ rental, onBackClick }) => {
               <div className="text-2xl font-bold text-gray-800">{rental.rent}<span className="text-sm font-normal text-gray-500">/mo</span></div>
               <div className="text-sm text-gray-500 mt-1">{rental.location}</div>
             </div>
-            <button className="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-indigo-700 transition-colors duration-200">
+            <button onClick={() => setShowTourModal(true)} className="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-indigo-700 transition-colors duration-200">
               Schedule a Tour
             </button>
-            <button className="w-full border-2 border-indigo-600 text-indigo-600 font-semibold py-3 px-6 rounded-xl hover:bg-indigo-50 transition-colors duration-200">
+            <button onClick={() => setShowContactModal(true)} className="w-full border-2 border-indigo-600 text-indigo-600 font-semibold py-3 px-6 rounded-xl hover:bg-indigo-50 transition-colors duration-200">
               Contact Landlord
             </button>
             <div className="text-center pt-2 border-t border-gray-100">
@@ -671,6 +843,17 @@ const RentalDetailScreen = ({ rental, onBackClick }) => {
           </div>
         </div>
       </div>
+
+      {showTourModal && (
+        <Modal isOpen={showTourModal} onClose={() => setShowTourModal(false)} title="Schedule a Tour">
+          <ScheduleTourForm onClose={() => setShowTourModal(false)} />
+        </Modal>
+      )}
+      {showContactModal && (
+        <Modal isOpen={showContactModal} onClose={() => setShowContactModal(false)} title="Contact Landlord">
+          <ContactLandlordForm onClose={() => setShowContactModal(false)} />
+        </Modal>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Rent from '../pages/Rent';
 
 // Mock recharts to avoid SVG rendering issues in tests
@@ -129,4 +129,86 @@ test('back button returns to listing view', () => {
   expect(screen.getByText(/Back to rentals/i)).toBeInTheDocument();
   fireEvent.click(screen.getByText(/Back to rentals/i));
   expect(screen.getByText(/Premium Rentals/i)).toBeInTheDocument();
+});
+
+// --- Modal Form Tests ---
+
+test('Schedule a Tour button opens tour modal with form fields', () => {
+  render(<Rent />);
+  fireEvent.click(screen.getByText(/Austin, TX/i));
+  fireEvent.click(screen.getByText(/Schedule a Tour/i));
+  expect(screen.getByTestId('tour-form')).toBeInTheDocument();
+  expect(screen.getByText(/Preferred Date/i)).toBeInTheDocument();
+  expect(screen.getByText(/Preferred Time/i)).toBeInTheDocument();
+});
+
+test('Contact Landlord button opens contact modal with form fields', () => {
+  render(<Rent />);
+  fireEvent.click(screen.getByText(/Austin, TX/i));
+  fireEvent.click(screen.getByText(/Contact Landlord/i));
+  expect(screen.getByTestId('contact-form')).toBeInTheDocument();
+  expect(screen.getByText(/Send Message/i)).toBeInTheDocument();
+});
+
+test('Tour form shows validation errors on empty submit', () => {
+  render(<Rent />);
+  fireEvent.click(screen.getByText(/Austin, TX/i));
+  fireEvent.click(screen.getByText(/Schedule a Tour/i));
+  fireEvent.click(screen.getByRole('button', { name: /Schedule Tour/i }));
+  expect(screen.getByText('Name is required')).toBeInTheDocument();
+  expect(screen.getByText('Email is required')).toBeInTheDocument();
+  expect(screen.getByText('Phone is required')).toBeInTheDocument();
+  expect(screen.getByText('Preferred date is required')).toBeInTheDocument();
+  expect(screen.getByText('Preferred time is required')).toBeInTheDocument();
+});
+
+test('Contact form shows validation errors on empty submit', () => {
+  render(<Rent />);
+  fireEvent.click(screen.getByText(/Austin, TX/i));
+  fireEvent.click(screen.getByText(/Contact Landlord/i));
+  fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
+  expect(screen.getByText('Name is required')).toBeInTheDocument();
+  expect(screen.getByText('Email is required')).toBeInTheDocument();
+  expect(screen.getByText('Phone is required')).toBeInTheDocument();
+  expect(screen.getByText('Message is required')).toBeInTheDocument();
+});
+
+test('Tour form shows success on valid submit', () => {
+  render(<Rent />);
+  fireEvent.click(screen.getByText(/Austin, TX/i));
+  fireEvent.click(screen.getByText(/Schedule a Tour/i));
+  const form = screen.getByTestId('tour-form');
+  const inputs = form.querySelectorAll('input');
+  fireEvent.change(inputs[0], { target: { value: 'John Doe' } });
+  fireEvent.change(inputs[1], { target: { value: 'john@example.com' } });
+  fireEvent.change(inputs[2], { target: { value: '555-1234' } });
+  fireEvent.change(inputs[3], { target: { value: '2026-03-15' } });
+  fireEvent.change(form.querySelector('select'), { target: { value: 'morning' } });
+  fireEvent.click(screen.getByRole('button', { name: /Schedule Tour/i }));
+  expect(screen.getByTestId('tour-success')).toBeInTheDocument();
+  expect(screen.getByText('Tour Scheduled!')).toBeInTheDocument();
+});
+
+test('Contact form shows success on valid submit', () => {
+  render(<Rent />);
+  fireEvent.click(screen.getByText(/Austin, TX/i));
+  fireEvent.click(screen.getByText(/Contact Landlord/i));
+  const form = screen.getByTestId('contact-form');
+  const inputs = form.querySelectorAll('input');
+  fireEvent.change(inputs[0], { target: { value: 'Jane Doe' } });
+  fireEvent.change(inputs[1], { target: { value: 'jane@example.com' } });
+  fireEvent.change(inputs[2], { target: { value: '555-5678' } });
+  fireEvent.change(form.querySelector('textarea'), { target: { value: 'I am interested in this rental.' } });
+  fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
+  expect(screen.getByTestId('contact-success')).toBeInTheDocument();
+  expect(screen.getByText('Message Sent!')).toBeInTheDocument();
+});
+
+test('Modal closes when X button is clicked', () => {
+  render(<Rent />);
+  fireEvent.click(screen.getByText(/Austin, TX/i));
+  fireEvent.click(screen.getByText(/Schedule a Tour/i));
+  expect(screen.getByTestId('tour-form')).toBeInTheDocument();
+  fireEvent.click(screen.getByTestId('modal-close'));
+  expect(screen.queryByTestId('tour-form')).not.toBeInTheDocument();
 });
