@@ -10,6 +10,7 @@ const Navigation = () => (
         <Link to="/" className="hover:text-blue-200">Home</Link>
         <Link to="/buy" className="hover:text-blue-200">Buy</Link>
         <Link to="/sell" className="hover:text-blue-200">Sell</Link>
+        <Link to="/rent" className="hover:text-blue-200">Rent</Link>
         <Link to="/about" className="hover:text-blue-200">About</Link>
         <Link to="/contact" className="hover:text-blue-200">Contact</Link>
       </div>

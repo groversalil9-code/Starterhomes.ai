@@ -6,6 +6,7 @@ import Buy from './pages/Buy';
 import Sell from './pages/Sell';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Rent from './pages/Rent';
 
 const router = createHashRouter([
   {
@@ -31,6 +32,10 @@ const router = createHashRouter([
       {
         path: "contact",
         element: <Contact />,
+      },
+      {
+        path: "rent",
+        element: <Rent />,
       },
     ],
   },
